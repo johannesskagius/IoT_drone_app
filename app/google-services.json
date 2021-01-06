@@ -1,0 +1,98 @@
+{
+  "project_info": {
+    "project_number": "689601725326",
+    "firebase_url": "https://node-red-01-ed8d3.firebaseio.com",
+    "project_id": "node-red-01-ed8d3",
+    "storage_bucket": "node-red-01-ed8d3.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:689601725326:android:6761fdbbc024d8f2511adf",
+        "android_client_info": {
+          "package_name": "com.example.drone_app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "689601725326-r6jk3lnuqss62k3a8e3ec9ic5l37o2al.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRvL3ha9eE3WPaNmdHRbhcIXml7YJQqi8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "689601725326-r6jk3lnuqss62k3a8e3ec9ic5l37o2al.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:689601725326:android:5cd5c0c513554e48511adf",
+        "android_client_info": {
+          "package_name": "com.example.drone_simulator"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "689601725326-r6jk3lnuqss62k3a8e3ec9ic5l37o2al.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRvL3ha9eE3WPaNmdHRbhcIXml7YJQqi8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "689601725326-r6jk3lnuqss62k3a8e3ec9ic5l37o2al.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:689601725326:android:50b5a65a7cc2be4e511adf",
+        "android_client_info": {
+          "package_name": "com.example.node_red_01"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "689601725326-r6jk3lnuqss62k3a8e3ec9ic5l37o2al.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBRvL3ha9eE3WPaNmdHRbhcIXml7YJQqi8"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "689601725326-r6jk3lnuqss62k3a8e3ec9ic5l37o2al.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
