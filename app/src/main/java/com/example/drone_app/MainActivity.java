@@ -1,7 +1,6 @@
 package com.example.drone_app;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -30,7 +29,6 @@ public class MainActivity extends AppCompatActivity {
     private TextView xTextView, yTextView, statusTextView;
     private ArrayList<Position> path = new ArrayList<>();
     private ArrayList<Boolean> movedToPositions = new ArrayList<>();
-    private Handler mHandler = new Handler();
     private String droneXPosition;
     private DatabaseReference moveDroneRef;
     private String droneYPosition;
@@ -41,49 +39,53 @@ public class MainActivity extends AppCompatActivity {
     private String finishPosy;
     private int pathPos = 1;
     private Position targetPos;
-    private Handler handler = new Handler();
-    private Runnable waitAndCallMoveDrone = new Runnable() {
-        @Override
-        public void run() {
-            handler.postDelayed(this, 500);
-            moveDrone();
-        }
-    };
 
-    private void moveDrone() {          //A formidable solution.
+
+    private void moveDrone() {          //the first moveDrone function creates a path from the drones start position to the finish position
         String moveDir = null;
-        if (path.isEmpty())
-            path = getDronePath();
-        if (movedToPositions.isEmpty()) {
-            for (int i = 0; i < path.size(); i++) {
-                movedToPositions.add(i == 0);
-            }
+
+        if (path.isEmpty()) { //If the path is empty it needs to be created
+            createPath();   //Create the path if it's empty
         }
         //Get move Direction
-        for (Boolean bool : movedToPositions) {
-            if (!bool) {
-                moveDir = chooseMoveDir(path.get(pathPos));     //Pathpos is = current target location
-                targetPos = path.get(pathPos);
-                break;
-            }
-        }
+        moveDir = getMoveDirr(moveDir);
         if (moveDir == null) {
             return;
         }
-        moveDrone(moveDir);
+        moveDrone(moveDir); //Call second moveDrone method when we know the direction
     }
 
-    private void moveDrone(String moveDir) {
-        moveDroneRef = drone2Listener;
+    private String getMoveDirr(String moveDir) {
+        for (Boolean bool : movedToPositions) { //creates a for loop that runs the movedToPositions (Boolean array).
+            if (!bool) {                        //if the current boolean is false then that's the next target.
+                moveDir = chooseMoveDir(path.get(pathPos));     //Pathpos is = current target location chooseMoveDirr decides which direction to move next. move to line 150 to read about that method
+                targetPos = path.get(pathPos);       //Sett the target position
+                break;
+            }
+        }
+        return moveDir;
+    }
+
+    private void createPath() {
+        path = getDronePath();  //Move to line 167 to view this method.
+        if (movedToPositions.isEmpty()) {   //since an arraylist with positions can't be checked if they been reached we need to create an arraylist with the same amount of values in booleans.
+            for (int i = 0; i < path.size(); i++) { //This makes it possible to check if a positions has been reached.
+                movedToPositions.add(i == 0);   //The first positions is the drones start position. This one is already reached and should therefore be true from start.
+            }
+        }
+    }
+
+    private void moveDrone(String moveDir) {    //Second moveDrone method. Here we are going to set the server reference and the actual value to change to.
+        moveDroneRef = drone2Listener;  //drone2listener is the exact reference to the server for drone2. Later on we extend with for example drone2/positionX so that we can set the correct value.
         int changedValue;
         int x = 0;
         String value = null;
-        switch (moveDir) {
+        switch (moveDir) {      // This switch "loop" decides case based on the direction we got in the first moveDrone method.
             case "+x":       //Move drone positiv X angle
-                moveDroneRef = moveDroneRef.child(POSITION_X);
-                x += 1;
-                changedValue = Integer.parseInt(droneXPosition) + x;
-                value = "X";
+                moveDroneRef = moveDroneRef.child(POSITION_X);  //Extends the reference
+                x += 1;     //Adds postive 1 to the dronesXPosition.
+                changedValue = Integer.parseInt(droneXPosition) + x;    //combines the current value with positive 1 for the new value
+                value = "X";                                    //creates a value x. (will be explained later)
                 break;
             case "-x":       //Move drone negativ X angle
                 moveDroneRef = moveDroneRef.child(POSITION_X);
@@ -107,100 +109,106 @@ public class MainActivity extends AppCompatActivity {
             default:
                 changedValue = 0;
         }
-        DatabaseReference ref = moveDroneRef;
-        moveDrone(ref, changedValue, value);
+        moveDrone(changedValue, value);//now we know the moveDirection, t
+        // he new value of the drone in that axis and the databasereferance to the exakt value.
+        // Then we call the last method to execute our move.
     }
 
-    private void moveDrone(DatabaseReference ref, int changedValue, String value) {
-        ref.setValue(String.valueOf(changedValue));
+    private void moveDrone( int changedValue, String value) {
+        moveDroneRef.setValue(String.valueOf(changedValue));        //We set the drones new value in the database.
 
-        if (value.equalsIgnoreCase("X")) {
+        if (value.equalsIgnoreCase("X")) {          //this makes sure both values are always updated with the latest value.
             droneXPosition = String.valueOf(changedValue);
         } else {
             droneYPosition = String.valueOf(changedValue);
         }
 
 
-        Position dronePosition = new Position(droneXPosition + droneYPosition);
+        Position dronePosition = new Position(droneXPosition + droneYPosition); //creates a position called drone position.
         int i = 0;
-        for (Position currentTargetPosition : path) {
-            if (currentTargetPosition.equals(dronePosition) && i != 0) {
-                movedToPositions.set(pathPos, true);
+        for (Position currentTargetPosition : path) {   //Loops through the path array to see what positions are done
+            if (currentTargetPosition.equals(dronePosition) && i != 0) {    //If currentTargetPosition is the same as drone position and "i" isn't 0. if the integer "i" is
+                                                                            // zero that means that the positions we are comparing is the drone start position which cannot be allowed.
+                movedToPositions.set(pathPos, true);                        //if "i" isn't zero then we made it to an actual target which means we want to set the correct value in our boolean array
+                                                                            //to true and also add a pathPos++ so that we update our taget next iteration.
                 pathPos++;
             }
-            if (i == pathPos) break;
+            if (i == pathPos) {//if i == pathPos it's better to break the loop since if we target the
+                break;          // request position we don't need to check if the finish position is done.
+            }
             i++;
         }
-        if(checkIfAllPathsAreDone()){
-            request.child("active").setValue("Not active");
-            moveDrone = false;
-            drone2Listener.child(AVAILABLE).setValue("n");
+        if (checkIfAllPathsAreDone()) { // at last we check if all paths are done because if they are we need to do somethings
+            request.child("active").setValue("inActive"); // We set the request to inActive
+            moveDrone = false;                              //moveDrone to false
+            drone2Listener.child(AVAILABLE).setValue("n");  //and the drone to available
         }
     }
 
-    private Boolean checkIfAllPathsAreDone() {
+    private Boolean checkIfAllPathsAreDone() {  //This method loops through bool array movedToPositionif it founds a false value it returns false otherwise it returns true.
         for (Boolean pathsDone : movedToPositions) {
             if (!pathsDone) return false;
         }
         return true;
     }
 
-    private String chooseMoveDir(Position currentPosTarget) {
-        int xDiff = currentPosTarget.getX() - Integer.parseInt(droneXPosition);
+    private String chooseMoveDir(Position currentPosTarget) {       // This method decides in which direction the drone should move next.
+        int xDiff = currentPosTarget.getX() - Integer.parseInt(droneXPosition); //Count the differances in X,Y axis.
         int yDiff = currentPosTarget.getY() - Integer.parseInt(droneYPosition);
 
-        if (xDiff < yDiff && xDiff < 0)
+        if (xDiff < yDiff && xDiff < 0)     //if the x value is less than Y and less then zero move -x direction
             return "-x";
-        else if (xDiff < yDiff && xDiff > 0)
+        else if (xDiff < yDiff && xDiff > 0)         //if the x value is less than Y but bigger then zero move +x direction
             return "+x";
-        else if (xDiff > yDiff && yDiff < 0)
+        else if (xDiff > yDiff && yDiff < 0)         //if the x value is greater than Y but less then zero move -y direction
             return "-y";
-        else if (xDiff == yDiff)
+        else if (xDiff == yDiff)           //if the x value is equal to Y move -x
             return "-x";
         else {
-            if (xDiff == 0 && yDiff < 0)
+            if (xDiff == 0 && yDiff < 0)        //If x== 0 and Y is less than 0 move -y
                 return "-y";
-            else if (xDiff == 0 && yDiff > 0)
+            else if (xDiff == 0 && yDiff > 0)   //If x== 0 and Y is greater than 0 move +y
                 return "+y";
-            else if (yDiff == 0 && xDiff < 0)
+            else if (yDiff == 0 && xDiff < 0)   //If y== 0 and x is greater than 0 move -x
                 return "-x";
-            else if (yDiff == 0 && xDiff > 0)
+            else if (yDiff == 0 && xDiff > 0)   //If y== 0 and x is greater than 0 move +x
                 return "+x";
             else
-                return "+y";
+                return "+y";        // if nothing else matches just move +y
         }
     }
 
-    private ArrayList<Position> getDronePath() {
-        Position requestPosition = null;
-        Position finishPosition = null;
+    private ArrayList<Position> getDronePath() {        // this method creates the drone path.
+        Position requestPosition = null;            //it creates a request position which is null at first
+        Position finishPosition = null;             //it creates a request position which is null at first
 
         Position droneStartPosition = new Position(droneXPosition + droneYPosition);
-        path.add(droneStartPosition);
+        path.add(droneStartPosition);       //the drones start position is added.
 
-        //Check drone start position to request. If drone need to pass PASSPOSITION it needs to be added to route
+        //Check drone start position to request. If drone need to pass PASSPOSITION it needs to be added to route.
+        //PASSPOSITION is a position the drone need to pass if it wants to move between some areas. This makes sure it doesn't fly where it can't.
         if (startPosY != null || startPosX != null) {
-            requestPosition = new Position(startPosX + startPosY);
-            if (compareDroneStartToRequest(droneStartPosition, requestPosition)) {
+            requestPosition = new Position(startPosX + startPosY);  //Store values in the request position.
+            if (comparePosition(droneStartPosition, requestPosition)) {  //here we compare if the drone needs to pass this passposition if it does it adds the pass position to the path.
                 path.add(PASSPOSITION);
             }
-            path.add(requestPosition);
+            path.add(requestPosition);  //here we finally add the request position to the path array
         }
 
         //Check drone request finish position. If drone need to pass PASSPOSTION it needs to be added to route
+        // we repeat the procedure above to create a path to the finish position.
         if (finishPosX != null || finishPosy != null) {
             finishPosition = new Position(finishPosX + finishPosy);
-            if (compareDroneStartToRequest(requestPosition, finishPosition)) {
+            if (comparePosition(requestPosition, finishPosition)) {
                 path.add(PASSPOSITION);
             }
         }
         path.add(finishPosition);
-
         return path;
     }
 
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
+    protected void onCreate(Bundle savedInstanceState) {    //This are the method that are runned directly to instantiate the view, and set the listeners.
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         xTextView = findViewById(R.id.XValue);
@@ -211,7 +219,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void getRequest() {
-        request.addValueEventListener(new ValueEventListener() {
+        request.addValueEventListener(new ValueEventListener() {    //This method gets the request from the server. Ones it's changed on the server it collects the values.
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 String active = snapshot.child("active").getValue().toString();
@@ -223,7 +231,7 @@ public class MainActivity extends AppCompatActivity {
                     startPosY = convertYToCorrectFormat(startPosY);
                     startPosX = snapshot.child(STARTPOSX).getValue().toString();
                     drone2Listener.child(AVAILABLE).setValue("busy");
-                    if (!moveDrone) {
+                    if (!moveDrone) {               //if moveDrone is false it makes the first move for the drone. sets the moveDrone to true and calls the method moveDrone the first time.
                         moveDrone = true;
                         moveDrone();
                     }
@@ -237,29 +245,31 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private String convertYToCorrectFormat(String finishY) {
-        String yValue = finishY;
+    private String convertYToCorrectFormat(String finishY) {//since the y value can be row 2 or row 14 the server may return a single value or a double but we want it always to be two values
+        String yValue = finishY;                //even if it's a 02. This method makes sure of that.
         if (finishY.length() == 1) {
             yValue = "0" + finishY;
         }
         return yValue;
     }
 
-    private void getDronePosition() {
+    private void getDronePosition() {   //this is the drone listener.
         drone2Listener.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
-                droneXPosition = snapshot.child(POSITION_X).getValue().toString();
+                droneXPosition = snapshot.child(POSITION_X).getValue().toString(); // collects the important values.
                 droneYPosition = snapshot.child(POSITION_Y).getValue().toString();
                 droneYPosition = convertYToCorrectFormat(droneYPosition);
-                if (moveDrone) {
-                    //handler.post(waitAndCallMoveDrone);
+                if (moveDrone) {                    //first move will be done by the request listener but we want to drone to move the second and the third time it self.
+                    try {                           // So the first server makes the drone move the first time. The values are changed on the server and this method calls because the values are changed
+                        Thread.sleep(1000); //moveDrone is true because we sat it to true in requestlistener.
+                    } catch (InterruptedException e) {//We wait 1000millis and then calls moveDrone() to simulate the time it takes for the drone to move
+                        e.printStackTrace();
+                    }
                     moveDrone();
                 }
-
                 xTextView.setText(droneXPosition);
                 yTextView.setText(droneYPosition);
-                // statusTextView.setText(status);
             }
 
             @Override
@@ -269,23 +279,10 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private Boolean compareDroneStartToRequest(Position droneStart, Position requestStart) {
+    private Boolean comparePosition(Position droneStart, Position requestStart) {   //this method compare the positions if the drone needs to pass a passposition or not.
         if (droneStart.getX() > 4 && requestStart.getX() < 4) {
-            if (droneStart.getY() < 5 && requestStart.getY() > 5) {
-                return true;
-            } else {
-                return false;
-            }
+            return droneStart.getY() < 5 && requestStart.getY() > 5;
         }
         return false;
-    }
-
-    private Boolean allPathsDone() {
-        if (movedToPositions.size() == 0)
-            return true;
-        for (Boolean bool : movedToPositions) {
-            if (!bool) return false;
-        }
-        return true;
     }
 }
