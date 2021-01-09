@@ -114,7 +114,7 @@ public class MainActivity extends AppCompatActivity {
         // Then we call the last method to execute our move.
     }
 
-    private void moveDrone( int changedValue, String value) {
+    private void moveDrone(int changedValue, String value) {
         moveDroneRef.setValue(String.valueOf(changedValue));        //We set the drones new value in the database.
 
         if (value.equalsIgnoreCase("X")) {          //this makes sure both values are always updated with the latest value.
@@ -123,14 +123,13 @@ public class MainActivity extends AppCompatActivity {
             droneYPosition = String.valueOf(changedValue);
         }
 
-
         Position dronePosition = new Position(droneXPosition + droneYPosition); //creates a position called drone position.
         int i = 0;
         for (Position currentTargetPosition : path) {   //Loops through the path array to see what positions are done
             if (currentTargetPosition.equals(dronePosition) && i != 0) {    //If currentTargetPosition is the same as drone position and "i" isn't 0. if the integer "i" is
-                                                                            // zero that means that the positions we are comparing is the drone start position which cannot be allowed.
+                // zero that means that the positions we are comparing is the drone start position which cannot be allowed.
                 movedToPositions.set(pathPos, true);                        //if "i" isn't zero then we made it to an actual target which means we want to set the correct value in our boolean array
-                                                                            //to true and also add a pathPos++ so that we update our taget next iteration.
+                //to true and also add a pathPos++ so that we update our taget next iteration.
                 pathPos++;
             }
             if (i == pathPos) {//if i == pathPos it's better to break the loop since if we target the
@@ -142,6 +141,9 @@ public class MainActivity extends AppCompatActivity {
             request.child("active").setValue("inActive"); // We set the request to inActive
             moveDrone = false;                              //moveDrone to false
             drone2Listener.child(AVAILABLE).setValue("n");  //and the drone to available
+            path.clear();
+            movedToPositions.clear();
+            pathPos = 1;
         }
     }
 
