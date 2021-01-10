@@ -283,7 +283,7 @@ public class MainActivity extends AppCompatActivity {
         });
     }
 
-    private Boolean comparePosition(Position droneStart, Position requestStart) {   //this method compare the positions if the drone needs to pass a passposition or not.
+    private Boolean comparePosition(Position droneStart, Position requestStart) {   //this method compare the positions if the drone needs to pass the passposition or not.
         if (droneStart.getX() > 4 && requestStart.getX() < 4) {
             return droneStart.getY() < 5 && requestStart.getY() > 5;
         }
