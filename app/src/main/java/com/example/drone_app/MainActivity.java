@@ -25,12 +25,12 @@ public class MainActivity extends AppCompatActivity {
     private static final String STARTPOSY = "startPos y";
     private static final String STARTPOSX = "startPos x";
     private static final Position PASSPOSITION = new Position("304");
-    private FirebaseDatabase database = FirebaseDatabase.getInstance();
-    private DatabaseReference drone2Listener = database.getReference("drone2");
-    private DatabaseReference request = database.getReference("request");
+    private final FirebaseDatabase database = FirebaseDatabase.getInstance();
+    private final DatabaseReference drone2Listener = database.getReference("drone2");
+    private final DatabaseReference request = database.getReference("request");
     private TextView xTextView, yTextView, statusTextView;
     private ArrayList<Position> path = new ArrayList<>();
-    private ArrayList<Boolean> movedToPositions = new ArrayList<>();
+    private final ArrayList<Boolean> movedToPositions = new ArrayList<>();
     private String droneXPosition;
     private DatabaseReference moveDroneRef;
     private String droneYPosition;
