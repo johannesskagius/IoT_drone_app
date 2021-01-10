@@ -1,3 +1,5 @@
+//Written By Josk3261@student.su.se
+
 package com.example.drone_app;
 
 import android.os.Bundle;
